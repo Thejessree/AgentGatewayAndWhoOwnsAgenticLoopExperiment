@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Start / stop / check the lab: Jaeger, the vulnerable MCP server, agentgateway.
-#   ./scripts/lab.sh start | stop | status | restart
+# Start / stop / check the lab: Jaeger, an MCP server, agentgateway.
+#   ./scripts/lab.sh start | stop | status | restart            # experiment 1
+#   LAB=exp3 ./scripts/lab.sh start | stop | status | restart   # experiment 3
 # Each process is tracked by a PID file in traces/pids/, so stop never misses one.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -8,11 +9,19 @@ PIDS=traces/pids
 mkdir -p "$PIDS" traces
 
 # name | port | command
-SERVICES=(
-  "jaeger|16686|./bin/jaeger-bin"
-  "vulnerable|8181|.venv/bin/python servers/vulnerable_server.py"
-  "gateway|3000|./scripts/run_gateway.sh"
-)
+case "${LAB:-exp1}" in
+  exp1) SERVICES=(
+    "jaeger|16686|./bin/jaeger-bin"
+    "vulnerable|8181|.venv/bin/python servers/vulnerable_server.py"
+    "gateway|3000|./scripts/run_gateway.sh gateway/config.yaml"
+  ) ;;
+  exp3) SERVICES=(
+    "jaeger|16686|./bin/jaeger-bin"
+    "helpdesk|8383|.venv/bin/python servers/helpdesk_server.py"
+    "gateway|3000|./scripts/run_gateway.sh gateway/exp3.yaml"
+  ) ;;
+  *) echo "unknown LAB=${LAB}; use exp1 or exp3"; exit 2 ;;
+esac
 
 running() { [ -f "$PIDS/$1.pid" ] && kill -0 "$(cat "$PIDS/$1.pid")" 2>/dev/null; }
 
@@ -50,10 +59,18 @@ status() {
   done
 }
 
+restart_one() {
+  local target=$1
+  [ -f "$PIDS/$target.pid" ] && kill "$(cat "$PIDS/$target.pid")" 2>/dev/null && echo "stopped $target"
+  rm -f "$PIDS/$target.pid"
+  sleep 1
+  start   # starts only what isn't running
+}
+
 case "${1:-status}" in
   start) start ;;
   stop) stop ;;
-  restart) stop; sleep 1; start ;;
+  restart) if [ -n "${2:-}" ]; then restart_one "$2"; else stop; sleep 1; start; fi ;;
   status) status ;;
-  *) echo "usage: $0 start|stop|status|restart"; exit 2 ;;
+  *) echo "usage: $0 start|stop|status|restart [service]"; exit 2 ;;
 esac

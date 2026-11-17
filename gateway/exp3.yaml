@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Experiment 3: agentgateway v1.7.0 in front of the helpdesk server.
+#
+#   Gemini agent --(JWT)--> agentgateway :3000/mcp --> helpdesk_server :8383/mcp
+#
+# Run via ./scripts/run_gateway.sh gateway/exp3.yaml (or LAB=exp3 ./scripts/lab.sh start).
+
+frontendPolicies:
+  tracing:
+    host: 127.0.0.1:4318    # Jaeger, OTLP/HTTP
+    protocol: http
+    randomSampling: true
+
+gateways:
+  default:
+    port: 3000
+
+mcp:
+  statefulMode: stateless
+  targets:
+  - name: helpdesk
+    mcp:
+      host: http://127.0.0.1:8383/mcp
+
+  policies:
+    mcpAuthentication:
+      mode: strict
+      issuer: http://127.0.0.1:9000
+      audiences: ["http://127.0.0.1:3000/mcp"]
+      jwks:
+        file: ./keys/jwks.json
+      jwtValidationOptions:
+        requiredClaims: [exp, iss, aud, sub]
+      resourceMetadata:
+        resource: http://127.0.0.1:3000/mcp
+        scopesSupported: ["tickets:read", "tickets:reply", "accounts:read"]
+        bearerMethodsSupported: [header]
+
+    # One scope per capability. The support agent's token carries all three:
+    # this is the "everything the job needs" baseline the experiment starts from.
+    mcpAuthorization:
+      rules:
+      - 'mcp.tool.name == "list_open_tickets" && "tickets:read"  in jwt.scopes'
+      - 'mcp.tool.name == "get_ticket"        && "tickets:read"  in jwt.scopes'
+      - 'mcp.tool.name == "lookup_account"    && "accounts:read" in jwt.scopes'
+      - 'mcp.tool.name == "get_requester_account" && "accounts:read" in jwt.scopes'
+      - 'mcp.tool.name == "send_reply"        && "tickets:reply" in jwt.scopes'
+
+    localRateLimit:
+    - maxTokens: 60
+      tokensPerFill: 60
+      fillInterval: 60s
+      type: requests
+      key: jwt.sub
