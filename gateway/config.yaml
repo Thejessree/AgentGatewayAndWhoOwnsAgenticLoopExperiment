@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Experiment 1: agentgateway v1.7.0 in front of the DELIBERATELY VULNERABLE server.
+# The server code is unchanged; everything below is gateway policy.
+#
+#   client --(JWT)--> agentgateway :3000/mcp --(no token)--> vulnerable_server :8181/mcp
+#
+# Don't run this file directly: on first start agentgateway writes an auto-generated
+# session key into its config file. scripts/run_gateway.sh copies this template to
+# gateway/.runtime/config.yaml (git-ignored) and runs that copy instead.
+
+frontendPolicies:
+  tracing:
+    host: 127.0.0.1:4318    # Jaeger, OTLP/HTTP
+    protocol: http
+    randomSampling: true    # trace every request in the lab
+
+gateways:
+  default:
+    port: 3000
+
+mcp:
+  # Our server speaks stateless 2026-07-28; don't let the gateway mint sessions.
+  statefulMode: stateless
+  targets:
+  - name: devops
+    mcp:
+      host: http://127.0.0.1:8181/mcp
+
+  policies:
+    # --- Who are you? Every call must carry a valid JWT from the lab IdP. ----------
+    mcpAuthentication:
+      mode: strict
+      issuer: http://127.0.0.1:9000
+      audiences: ["http://127.0.0.1:3000/mcp"]
+      jwks:
+        file: ./keys/jwks.json
+      jwtValidationOptions:
+        requiredClaims: [exp, iss, aud, sub]
+      resourceMetadata:
+        resource: http://127.0.0.1:3000/mcp
+        scopesSupported: ["secret:read", "deploy:prod"]
+        bearerMethodsSupported: [header]
+
+    # --- What may you do? Allow rules; anything not allowed is denied and hidden. ---
+    mcpAuthorization:
+      rules:
+      - 'mcp.tool.name == "open_session" && "secret:read" in jwt.scopes'
+      - 'mcp.tool.name == "read_secret"  && "secret:read" in jwt.scopes'
+      - 'mcp.tool.name == "deploy"       && "deploy:prod" in jwt.scopes'
+
+    # --- How often? Per-user bucket keyed on the verified subject. ---------------
+    localRateLimit:
+    - maxTokens: 20
+      tokensPerFill: 20
+      fillInterval: 60s
+      type: requests
+      key: jwt.sub

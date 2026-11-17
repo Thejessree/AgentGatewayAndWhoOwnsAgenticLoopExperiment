@@ -1,0 +1,42 @@
+// Minimal, wire-compatible subset of Envoy's rate limit service API (v3).
+// Only the fields this lab reads or writes are declared; protobuf skips the rest.
+// Upstream definitions:
+//   envoy/service/ratelimit/v3/rls.proto
+//   envoy/extensions/common/ratelimit/v3/ratelimit.proto
+// The package and service names must match upstream: they form the gRPC path
+// /envoy.service.ratelimit.v3.RateLimitService/ShouldRateLimit.
+syntax = "proto3";
+
+package envoy.service.ratelimit.v3;
+
+message RateLimitDescriptor {
+  message Entry {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Entry entries = 1;
+}
+
+message RateLimitRequest {
+  string domain = 1;
+  repeated RateLimitDescriptor descriptors = 2;
+  uint32 hits_addend = 3;
+}
+
+message RateLimitResponse {
+  enum Code {
+    UNKNOWN = 0;
+    OK = 1;
+    OVER_LIMIT = 2;
+  }
+  message DescriptorStatus {
+    Code code = 1;
+    uint32 limit_remaining = 3;
+  }
+  Code overall_code = 1;
+  repeated DescriptorStatus statuses = 2;
+}
+
+service RateLimitService {
+  rpc ShouldRateLimit(RateLimitRequest) returns (RateLimitResponse) {}
+}
