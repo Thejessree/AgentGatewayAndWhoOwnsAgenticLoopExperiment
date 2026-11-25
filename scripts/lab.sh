@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Start / stop / check the lab: Jaeger, an MCP server, agentgateway.
 #   ./scripts/lab.sh start | stop | status | restart            # experiment 1
-#   LAB=exp3 ./scripts/lab.sh start | stop | status | restart   # experiment 3
+#   LAB=exp2 ./scripts/lab.sh start | stop | status | restart   # experiment 2
 # Each process is tracked by a PID file in traces/pids/, so stop never misses one.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -15,12 +15,12 @@ case "${LAB:-exp1}" in
     "vulnerable|8181|.venv/bin/python servers/vulnerable_server.py"
     "gateway|3000|./scripts/run_gateway.sh gateway/config.yaml"
   ) ;;
-  exp3) SERVICES=(
+  exp2) SERVICES=(
     "jaeger|16686|./bin/jaeger-bin"
     "helpdesk|8383|.venv/bin/python servers/helpdesk_server.py"
-    "gateway|3000|./scripts/run_gateway.sh gateway/exp3.yaml"
+    "gateway|3000|./scripts/run_gateway.sh gateway/exp2.yaml"
   ) ;;
-  *) echo "unknown LAB=${LAB}; use exp1 or exp3"; exit 2 ;;
+  *) echo "unknown LAB=${LAB}; use exp1 or exp2"; exit 2 ;;
 esac
 
 running() { [ -f "$PIDS/$1.pid" ] && kill -0 "$(cat "$PIDS/$1.pid")" 2>/dev/null; }

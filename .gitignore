@@ -6,3 +6,4 @@ keys/
 gateway/.runtime/
 bin/
 traces/
+.DS_Store

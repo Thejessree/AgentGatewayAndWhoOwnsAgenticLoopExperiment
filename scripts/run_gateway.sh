@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run agentgateway from a git-ignored copy of a config template.
 #   ./scripts/run_gateway.sh                     # gateway/config.yaml (experiment 1)
-#   ./scripts/run_gateway.sh gateway/exp3.yaml   # experiment 3
+#   ./scripts/run_gateway.sh gateway/exp2.yaml   # experiment 2
 # agentgateway writes an auto-generated session key into the config file it was
 # started with; running a copy keeps that secret out of the tracked template.
 set -euo pipefail

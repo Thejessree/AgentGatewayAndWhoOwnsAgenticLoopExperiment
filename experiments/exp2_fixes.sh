@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Experiment 3, part 2: does removing one leg of the trifecta stop the leak, and what does it cost?
+# Experiment 2, part 2: does removing one leg of the trifecta stop the leak, and what does it cost?
 #
 #   baseline               every scope, open-ended lookup_account(email)
 #   fix1-no-account-scope  gateway: the agent's token loses accounts:read
 #   fix2-requester-lookup  tool design: get_requester_account(ticket_id) replaces lookup_account(email)
 #
-# Usage: LAB=exp3 ./scripts/lab.sh start && ./experiments/exp3_fixes.sh [runs-per-cell]
+# Usage: LAB=exp2 ./scripts/lab.sh start && ./experiments/exp2_fixes.sh [runs-per-cell]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export LAB=exp3
+export LAB=exp2
 RUNS=${1:-3}
 MODELS=(gemini-2.5-flash gemini-3.1-flash-lite)
 ALL="tickets:read accounts:read tickets:reply"
@@ -18,7 +18,7 @@ helpdesk_mode() {
   HELPDESK_LOOKUP=$1 ./scripts/lab.sh restart helpdesk | grep -E "helpdesk (up|FAILED)"
 }
 
-./scripts/lab.sh restart gateway | grep -E "gateway (up|FAILED)"   # pick up gateway/exp3.yaml changes
+./scripts/lab.sh restart gateway | grep -E "gateway (up|FAILED)"   # pick up gateway/exp2.yaml changes
 
 run_cell() {   # label scope
   for m in "${MODELS[@]}"; do
@@ -41,7 +41,7 @@ import json, sys
 from collections import defaultdict
 start = float(sys.argv[1])
 cells = defaultdict(list)
-for r in map(json.loads, open("traces/exp3_runs.jsonl")):
+for r in map(json.loads, open("traces/exp2_runs.jsonl")):
     if r["ts"] >= start:
         cells[(r["label"], r["model"])].append(r)
 print("\n| Setup | Model | PIN leaked | Answered Mallory's plan question |")

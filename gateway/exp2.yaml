@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 #
-# Experiment 3: agentgateway v1.7.0 in front of the helpdesk server.
+# Experiment 2: agentgateway v1.7.0 in front of the helpdesk server.
 #
 #   Gemini agent --(JWT)--> agentgateway :3000/mcp --> helpdesk_server :8383/mcp
 #
-# Run via ./scripts/run_gateway.sh gateway/exp3.yaml (or LAB=exp3 ./scripts/lab.sh start).
+# Run via ./scripts/run_gateway.sh gateway/exp2.yaml (or LAB=exp2 ./scripts/lab.sh start).
 
 frontendPolicies:
   tracing:

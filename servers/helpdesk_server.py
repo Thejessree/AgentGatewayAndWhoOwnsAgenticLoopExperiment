@@ -9,7 +9,7 @@ lethal trifecta (checklist question 10):
 
 Ticket T-1042 is from an outsider and hides an instruction for the AI agent.
 Nothing in this server is "vulnerable" in the classic sense: every tool does what
-it says. The question for experiment 3 is who should stop the agent from chaining
+it says. The question for experiment 2 is who should stop the agent from chaining
 them, and whether the traces show what happened.
 
 Each tool tags its server-side span with metadata only (ids, emails, sizes),
@@ -136,7 +136,7 @@ def get_requester_account(ticket_id: str) -> dict:
     return {"email": email, **acct} if acct else {"error": "no such account"}
 
 
-# HELPDESK_LOOKUP=requester swaps the open-ended lookup for the ticket-scoped one (experiment 3, fix 2).
+# HELPDESK_LOOKUP=requester swaps the open-ended lookup for the ticket-scoped one (experiment 2, fix 2).
 LOOKUP_MODE = os.environ.get("HELPDESK_LOOKUP", "email")
 mcp.tool()(get_requester_account if LOOKUP_MODE == "requester" else lookup_account)
 

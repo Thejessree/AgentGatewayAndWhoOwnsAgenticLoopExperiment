@@ -19,8 +19,8 @@ arguments (handles, tenant ownership, duplicate writes) stayed the server's job.
 | 7 | Minimal scopes, reader/writer split | **Fixed by gateway** | Read-scoped `deploy` blocked; header/body smuggling blocked |
 | 8 | Client allowlists, no token passthrough | **Partly** | Token never reached the server; stolen token replayed from another client worked |
 | 9 | Tool manifests pinned and diffed | Not tested | Gateway hides unauthorized tools but doesn't pin descriptions |
-| 10 | Trifecta: one leg removed | Not tested | Experiment 3 |
-| 11 | Traces on every tool call | **Fixed by gateway** | Every call traced with `jwt.sub`, tool, outcome; never handle contents |
+| 10 | Trifecta: one leg removed | Not tested | Experiment 2 (`exp2_*`) |
+| 11 | Traces on every tool call | **Fixed by gateway** | Every call traced with `jwt.sub`, tool, outcome; never handle contents. Caveat: no handle ids, so no same-handle-across-clients alert |
 | 12 | Downgrade deliberate, or refused | **Partly** | Legacy `2025-11-25` client accepted silently, but policies still applied |
 
 Tally of the 8 questions this experiment could measure: **3 fixed, 2 partly, 2 server's job,
@@ -114,7 +114,7 @@ not tested here.
 - **6. `cacheScope`**: our server returns no cacheable results.
 - **9. Manifest pinning**: the gateway filters tools by policy but doesn't hash or diff their
   descriptions. A rug-pull test would need a server that changes its tool descriptions.
-- **10. Trifecta**: that's experiment 3.
+- **10. Trifecta**: that's experiment 2 (`exp2_*`).
 
 ---
 

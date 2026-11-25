@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-exp3_whodunit.py -- reconstruct an agent run from its trace alone.
+exp2_whodunit.py -- reconstruct an agent run from its trace alone.
 
 Angie Jones's question at AGNTCon + MCPCon Japan: follow the evidence through one
 failed agent run and find where it went wrong, then ask who owns the outcome.
 This script answers from nothing but the spans in Jaeger.
 
-    .venv/bin/python experiments/exp3_whodunit.py <trace-id>
-    .venv/bin/python experiments/exp3_whodunit.py --latest            # newest run in traces/exp3_runs.jsonl
-    .venv/bin/python experiments/exp3_whodunit.py --latest-leak       # newest run that leaked
-    .venv/bin/python experiments/exp3_whodunit.py <id> --metadata-only  # ignore recorded contents
+    .venv/bin/python experiments/exp2_whodunit.py <trace-id>
+    .venv/bin/python experiments/exp2_whodunit.py --latest            # newest run in traces/exp2_runs.jsonl
+    .venv/bin/python experiments/exp2_whodunit.py --latest-leak       # newest run that leaked
+    .venv/bin/python experiments/exp2_whodunit.py <id> --metadata-only  # ignore recorded contents
 
 Three passes:
   1. Timeline     every span from agent, gateway and server, in order
@@ -25,7 +25,7 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "traces" / "exp3_runs.jsonl"
+RUNS = ROOT / "traces" / "exp2_runs.jsonl"
 JAEGER = "http://127.0.0.1:16686/api/v3/traces/"
 
 CONTENT_KEYS = {"agent.tool.arguments", "agent.tool.result_preview", "gen_ai.output.preview"}
@@ -48,7 +48,7 @@ def pick_trace(args) -> str:
     if args.latest_leak:
         runs = [r for r in runs if r["outcome"] == "LEAKED"]
     if not runs:
-        sys.exit("no matching runs in traces/exp3_runs.jsonl")
+        sys.exit("no matching runs in traces/exp2_runs.jsonl")
     return runs[-1]["trace_id"]
 
 

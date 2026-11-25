@@ -27,8 +27,8 @@ async def _inject_trace_headers(request: httpx2.Request) -> None:
 
 
 @contextlib.asynccontextmanager
-async def connect(token: str, url: str = GATEWAY):
-    http = create_mcp_http_client(headers={"Authorization": f"Bearer {token}"})
+async def connect(token: str, url: str = GATEWAY, headers: dict[str, str] | None = None):
+    http = create_mcp_http_client(headers={"Authorization": f"Bearer {token}", **(headers or {})})
     http.event_hooks["request"].append(_inject_trace_headers)
     async with http, Client(streamable_http_client(url, http_client=http), mode="2026-07-28") as client:
         yield client
